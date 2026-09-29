@@ -1,0 +1,1 @@
+In questa lezione abbiamo analizzato il significato matematico dei costrutti del modello Entità/Relazione e classi/associazioni UML, con enfasi sui vincoli di cardinalità.  Riferirsi alle sezioni 3.1-3.4 del libro di Elmasri e Navathe.

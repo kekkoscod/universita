@@ -1,0 +1,471 @@
+
+\documentclass[svgnames]{beamer}
+% \documentclass[xcolor=svgnames,handout]{beamer}
+
+\usepackage{hyperref}
+\usepackage{fancyvrb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\usepackage{listings}
+\usepackage{color}
+% \usepackage{colortbl}
+\usepackage{verbatim}
+\usepackage{amsmath}
+\usepackage{multicol}
+
+\usecolortheme[named=MediumOrchid]{structure}
+\usetheme[height=7mm]{Rochester}
+
+\setbeamercolor{background canvas}{fg=MistyRose}
+\setbeamercolor{background canvas}{bg=LavenderBlush}
+\setbeamercolor{alerted text}{fg=OrangeRed}
+\setbeamercolor{block title}{fg=MistyRose}
+\setbeamercolor{frametitle}{fg=MistyRose}
+\setbeamercolor{structure}{fg=Indigo}
+
+\setbeamertemplate{navigation symbols}{}
+
+\usepackage{xspace}
+
+\title{Esercizi di Algebra Relazionale \\ e Traduzione in SQL}
+\author{Andrea Cal\'\i}
+\institute{\alert{UniNA Federico~II}}
+% \\
+%   \alert{RelationalAI}\\
+%   \alert{University of Oxford}}
+
+\date{\colorbox{DarkMagenta}{\parbox{90mm}{\centering
+%      \textcolor{LavenderBlush}{\textbf{TU Wien Talk}}\\
+      \textcolor{LavenderBlush}{Lez.~21}}}}
+
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Schema degli esercizi}
+
+\begin{frame}{Schema degli eserciz\^\i}
+
+  \[
+\begin{aligned}
+\textbf{Fornitori}( & fid,\; fnome,\; indirizzo )\\
+\textbf{Pezzi}(     & pid,\; pnome,\; colore,\; peso )\\
+\textbf{Catalogo}(  & fid,\; pid,\; costo )
+\end{aligned}
+\]
+\end{frame}
+
+\begin{frame}{Nota}
+
+  \begin{block}{Notazione}
+    \begin{itemize}
+    \item $R1 = R2$ notazione per $\rho_{R1}(R2)$
+      \begin{itemize}
+      \item ovvia notazione aggiuntiva per attributi
+      \end{itemize}
+    \item
+
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 1}
+  
+  \begin{block}{Domanda}
+    Nomi dei fornitori che forniscono pezzi rossi
+  \end{block} \pause
+
+  \begin{block}{Algebra relazionale}
+    \vspace*{-1.5em}
+    \begin{multline*}
+      \pi_{fnome}\Bigl(
+        Fornitori
+        \Join_{Fornitori.fid=Catalogo.fid}\\
+        \bigl
+        (\sigma_{colore='rosso'}(Pezzi)
+        \Join_{Pezzi.pid=Catalogo.pid}Catalogo\bigr)
+      \Bigr)
+    \end{multline*}
+  \end{block}\pause
+
+  \begin{block}{SQL}
+  \begin{verbatim}
+SELECT DISTINCT f.fnome
+FROM Fornitori AS f
+JOIN Catalogo  AS c ON f.fid = c.fid
+JOIN Pezzi     AS p ON c.pid = p.pid
+WHERE p.colore = 'rosso';
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 2}
+
+  \begin{block}{Domanda}
+    Fid dei fornitori che forniscono pezzi rossi o verdi
+  \end{block}\pause
+
+  \begin{block}{Algebra relazionale}
+     \vspace*{-1.5em}
+    \begin{multline*}
+      \pi_{fid}\Bigl(
+        Catalogo
+        \Join_{Catalogo.pid=Pezzi.pid}\\
+        \bigl(\sigma_{colore='rosso'\lor colore='verde'}(Pezzi)\bigr)
+      \Bigr)
+    \end{multline*}
+  \end{block}
+  \begin{block}{SQL}
+  \begin{verbatim}
+SELECT DISTINCT c.fid
+FROM Catalogo AS c
+JOIN Pezzi   AS p ON c.pid = p.pid
+WHERE p.colore IN ('rosso','verde');
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 3 (1/2)}
+
+  \begin{block}{Domanda}
+    Fid di fornitori che forniscono pezzi rossi o si trovano in via Cavour
+  \end{block}\pause
+
+  \begin{block}{Algebra relazionale}
+    \begin{align*}
+      R_1 = \pi_{fid}\bigl(
+        Catalogo \Join \sigma_{colore='rosso'}(Pezzi)
+      \bigr),\\
+      R_2 = \pi_{fid}\bigl(
+        \sigma_{indirizzo='Via Cavour'}(Fornitori)
+      \bigr),\\
+      \text{Risultato} = R_1 \;\cup\; R_2
+    \end{align*}
+  \end{block}
+\end{frame}
+  
+\begin{frame}[fragile]{Esercizio 3 (2/2)}
+
+  \begin{block}{SQL}
+  \begin{verbatim}
+WITH R1 AS (
+  SELECT DISTINCT c.fid
+  FROM Catalogo AS c
+  JOIN Pezzi    AS p ON c.pid = p.pid
+  WHERE p.colore = 'rosso'
+),
+R2 AS (
+  SELECT fid
+  FROM Fornitori
+  WHERE indirizzo = 'Via Cavour'
+)
+SELECT fid FROM R1
+UNION
+SELECT fid FROM R2;
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 4 (1/2)}
+
+  \begin{block}{Domanda}
+    Fid di fornitori che forniscono pezzi rossi e verdi
+  \end{block}\pause
+
+  \begin{block}{Algebra relazionale}
+    \begin{align*}
+      R_{rosso} = \pi_{fid}\bigl(
+        Catalogo \Join \sigma_{colore='rosso'}(Pezzi)
+      \bigr),\\
+      R_{verde} = \pi_{fid}\bigl(
+        Catalogo \Join \sigma_{colore='verde'}(Pezzi)
+        \bigr),\\
+      \text{Risultato} = R_{rosso} \;\cap\; R_{verde}
+    \end{align*}
+  \end{block}
+\end{frame}
+  
+\begin{frame}[fragile]{Esercizio 4 (2/2)}
+
+  \begin{block}{SQL}
+  \begin{verbatim}
+SELECT fid
+FROM (
+  SELECT DISTINCT c.fid, p.colore
+  FROM Catalogo AS c
+  JOIN Pezzi    AS p ON c.pid = p.pid
+  WHERE p.colore IN ('rosso','verde')
+) AS t
+GROUP BY fid
+HAVING COUNT(DISTINCT colore) = 2;
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 5}
+
+  \begin{block}{Domanda}
+    Fid dei fornitori che forniscono tutti i pezzi
+  \end{block}\pause
+  
+  \begin{block}{Algebra relazionale}
+    \[
+      \bigl(\pi_{fid,pid}(Catalogo)\bigr)
+      \;\div\;
+      \bigl(\pi_{pid}(Pezzi)\bigr)
+    \]
+  \end{block}\pause
+
+  \begin{block}{SQL}
+  \begin{verbatim}
+SELECT c.fid
+FROM Catalogo AS c
+GROUP BY c.fid
+HAVING COUNT(DISTINCT c.pid)
+     = (SELECT COUNT(*) FROM Pezzi);
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 6}
+  \begin{block}{Domanda}
+    Fid dei fornitori che forniscono tutti i pezzi rossi
+  \end{block}\pause
+  
+  \begin{block}{Algebra relazionale}
+    \[
+      \bigl(\pi_{fid,pid}(Catalogo)\bigr)
+      \;\div\;
+      \bigl(\pi_{pid}(\sigma_{colore='rosso'}(Pezzi))\bigr)
+    \]
+  \end{block}\pause
+  
+  \begin{block}{SQL}
+  \begin{verbatim}
+SELECT c.fid
+FROM Catalogo AS c
+JOIN Pezzi AS p ON c.pid = p.pid
+WHERE p.colore = 'rosso'
+GROUP BY c.fid
+HAVING COUNT(DISTINCT c.pid)
+  = (SELECT COUNT(*) FROM Pezzi WHERE colore='rosso');
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 7 (1/2)}
+
+  \begin{block}{Domanda}
+    Fid dei fornitori che forniscono tutti i pezzi che sono rossi o verdi
+  \end{block}\pause
+  
+  \begin{block}{Algebra relazionale}
+    \[
+      \bigl(\pi_{fid,pid}(Catalogo)\bigr)
+      \;\div\;
+      \bigl(\pi_{pid}(\sigma_{colore\in\{rosso,verde\}}(Pezzi))\bigr)
+    \]
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 7 (2/2)}
+
+  \begin{block}{SQL}
+\begin{verbatim}
+SELECT c.fid
+FROM Catalogo AS c
+JOIN Pezzi AS p ON c.pid = p.pid
+WHERE p.colore IN ('rosso','verde')
+GROUP BY c.fid
+HAVING COUNT(DISTINCT c.pid)
+     = (
+       SELECT COUNT(*) FROM Pezzi
+       WHERE colore IN ('rosso','verde')
+       );
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 8 (1/3)}
+
+  \begin{block}{Domanda}
+    Fid dei fornitori che forniscono tutti i pezzi rossi oppure tutti
+    i pezzi verdi
+  \end{block}\pause
+
+  \begin{block}{Algebra relazionale}
+    \begin{align*}
+      R_r = \bigl(\pi_{fid,pid}(Catalogo)\bigr)
+            \div
+            \bigl(\pi_{pid}(\sigma_{colore='rosso'}(Pezzi))\bigr),\\
+      R_g = \bigl(\pi_{fid,pid}(Catalogo)\bigr)
+            \div
+            \bigl(\pi_{pid}(\sigma_{colore='verde'}(Pezzi))\bigr),\\
+      \text{Risultato} = R_r \;\cup\; R_g
+    \end{align*}
+  \end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{Esercizio 8 (2/3)}
+
+  \begin{block}{SQL (1/2)}
+  \begin{verbatim}
+WITH Rr AS (
+  SELECT c.fid
+  FROM Catalogo AS c
+  JOIN Pezzi AS p ON c.pid = p.pid
+  WHERE p.colore='rosso'
+  GROUP BY c.fid
+  HAVING COUNT(DISTINCT c.pid)
+    = (SELECT COUNT(*) FROM Pezzi WHERE colore='rosso')
+),
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{Esercizio 8 (3/3)}
+
+  \begin{block}{SQL (2/2)}
+  \begin{verbatim}
+Rg AS (
+  SELECT c.fid
+  FROM Catalogo AS c
+  JOIN Pezzi AS p ON c.pid = p.pid
+  WHERE p.colore='verde'
+  GROUP BY c.fid
+  HAVING COUNT(DISTINCT c.pid)
+    = (SELECT COUNT(*) FROM Pezzi WHERE colore='verde')
+)
+SELECT fid FROM Rr
+UNION
+SELECT fid FROM Rg;
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 9 (1/2)}
+
+  \begin{block}{Domanda}
+    Coppie di fid tali che il fornitore col primo fid applica per
+    almeno un pezzo un prezzo maggiore di quello del fornitore col
+    secondo fid.
+  \end{block}\pause
+  
+  \begin{block}{Algebra relazionale}
+    \begin{align*}
+      R_1 = Catalogo,\\
+      R_2 = Catalogo,\\
+      \pi_{R_1.fid,R_2.fid}\Bigl(
+      \sigma_{R_1.pid=R_2.pid\wedge R_1.fid\neq R_2.fid\wedge R_1.costo>R_2.costo}
+      (R_1\times R_2)
+      \Bigr)
+    \end{align*}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 9 (2/2)}
+
+  \begin{block}{SQL}
+  \begin{verbatim}
+SELECT c1.fid AS fid1, c2.fid AS fid2
+FROM Catalogo AS c1
+JOIN Catalogo AS c2
+  ON c1.pid = c2.pid
+WHERE c1.fid <> c2.fid
+  AND c1.costo > c2.costo;
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 10 (1/2)}
+  \begin{block}{Domanda}
+    Pid di pezzi forniti da almeno~due fornitori
+  \end{block}\pause
+  
+  \begin{block}{Algebra relazionale}
+    \[
+      \pi_{R_1.pid}\Bigl(
+        \sigma_{R_1.pid=R_2.pid\wedge R_1.fid\neq R_2.fid}
+        (R_1\times R_2)
+      \Bigr)
+    \]
+  \end{block}\pause
+
+  \begin{block}{SQL}
+  \begin{verbatim}
+SELECT pid
+FROM Catalogo
+GROUP BY pid
+HAVING COUNT(DISTINCT fid) >= 2;
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 11 (1/3)}
+
+  \begin{block}{Domanda}
+    Pid dei pezzi più costosi da fornitore ``Sapienza''
+  \end{block} \pause
+  
+  \begin{block}{Algebra relazionale}
+    \begin{align*}
+      R_s = \pi_{fid}(\sigma_{fnome='Sapienza'}(Fornitori)),\\
+      R_c = R_s \Join Catalogo,\\
+      \text{Risultato} =
+      \pi_{pid}\Bigl(
+      R_c - \pi_{fid,pid,costo}\bigl(
+      \sigma_{c1.costo>c2.costo}(R_c\times R_c)
+      \bigr)
+      \Bigr)
+    \end{align*}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 11 (2/3)}
+
+  \begin{block}{SQL (1/2)}
+  \begin{verbatim}
+WITH Fs AS (
+  SELECT fid FROM Fornitori WHERE fnome='Sapienza'
+),
+Cs AS (
+  SELECT c.*
+  FROM Catalogo AS c
+  JOIN Fs AS f ON c.fid = f.fid
+),
+\end{verbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Esercizio 11 (3/3)}
+
+  \begin{block}{SQL (2/2)}
+  \begin{verbatim}
+MaxItems AS (
+  SELECT fid, pid, costo
+  FROM Cs
+  EXCEPT
+  SELECT c1.fid, c1.pid, c1.costo
+  FROM Cs AS c1
+  JOIN Cs AS c2
+    ON c1.fid=c2.fid AND c1.costo < c2.costo
+)
+SELECT DISTINCT pid FROM MaxItems;
+  \end{verbatim}
+  \end{block}
+\end{frame}
+
+
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
