@@ -1,0 +1,97 @@
+Ecco la specifica aggiornata in italiano, con "Prestatore" sostituito da "Utente" e una nuova relazione AutoreDi che modella il fatto che i docenti possono essere autori di articoli della biblioteca. La relazione Supervisiona tra Docente e Studente è mantenuta, e il resto della struttura è adattato coerentemente. Questo aggiunge un ulteriore livello di complessità, ma rimane adatto a un esercizio di 30 minuti.
+Esercizio: Progettazione di un Diagramma ER per un Sistema di Biblioteca Universitaria
+Durata: 30 minuti
+Obiettivo: Creare un diagramma Entity-Relationship (ER) che rappresenti un sistema di biblioteca universitaria, includendo una gerarchia di generalizzazione e relazioni specifiche con i sottotipi. Utilizzare la notazione di Elmasri/Navathe come guida.
+Scenario
+La biblioteca universitaria gestisce diversi tipi di utenti e gli articoli che prendono in prestito. Gli utenti possono essere studenti o docenti, e gli articoli possono essere libri o media (come DVD o CD). Inoltre, i docenti possono supervisionare gli studenti per progetti accademici e possono essere autori di articoli della biblioteca. Il tuo compito è progettare un diagramma ER che catturi queste relazioni e gerarchie.
+Componenti del Sistema
+
+    Entità e Attributi:
+        Utente (entità generale):
+            Attributi: UtenteID (chiave), Nome, Email, Telefono
+        Studente (entità specializzata, eredita da Utente):
+            Attributi: Matricola (chiave), CorsoDiLaurea, Anno
+        Docente (entità specializzata, eredita da Utente):
+            Attributi: IDDocente (chiave), Dipartimento, StanzaUfficio
+        ArticoloBiblioteca (entità generale):
+            Attributi: IDArticolo (chiave), Titolo, AnnoPubblicazione
+        Libro (entità specializzata, eredita da ArticoloBiblioteca):
+            Attributi: ISBN (chiave), Autore
+        Media (entità specializzata, eredita da ArticoloBiblioteca):
+            Attributi: Formato (es. DVD, CD), Durata
+    Relazioni:
+        Presta: Collega Utente ad ArticoloBiblioteca
+            Attributi: DataPrestito, DataScadenza
+            Cardinalità: Un Utente può prendere in prestito molti ArticoliBiblioteca (0,N), e un ArticoloBiblioteca può essere preso in prestito da un solo Utente alla volta (0,1).
+        Supervisiona: Collega Docente a Studente
+            Attributi: DataInizioSupervisione
+            Cardinalità: Un Docente può supervisionare molti Studenti (0,N), e uno Studente può essere supervisionato da un solo Docente alla volta (0,1).
+        AutoreDi: Collega Docente ad ArticoloBiblioteca
+            Attributi: Ruolo (es. autore principale, coautore)
+            Cardinalità: Un Docente può essere autore di molti ArticoliBiblioteca (0,N), e un ArticoloBiblioteca può avere molti Docenti come autori (0,N) – relazione molti-a-molti.
+    Gerarchie di Generalizzazione:
+        Utente è il supertipo, con Studente e Docente come sottotipi disgiunti (un Utente è o uno Studente o un Docente, non entrambi).
+        ArticoloBiblioteca è il supertipo, con Libro e Media come sottotipi disgiunti (un articolo è o un Libro o un Media).
+
+Notazione di Elmasri/Navathe
+
+    Usa rettangoli per le entità (sottolinea l’attributo chiave).
+    Usa ovali per gli attributi, collegati all’entità o relazione corrispondente.
+    Usa rombi per le relazioni.
+    Per la gerarchia di generalizzazione, usa un triangolo con la lettera "d" (disgiunto) che collega il supertipo ai sottotipi.
+    Usa linee con notazione (min, max) per indicare la cardinalità (es. (0,N) o (0,1)).
+
+Compito
+Disegna il diagramma ER completo su carta o con uno strumento digitale (es. Dia o DBeaver, se disponibile). Segui questi passaggi:
+
+    Identifica le Entità:
+        Disegna i rettangoli per Utente, Studente, Docente, ArticoloBiblioteca, Libro e Media.
+        Aggiungi gli attributi in ovali, collegandoli alle entità corrette. Sottolinea le chiavi.
+    Definisci le Gerarchie:
+        Collega Utente a Studente e Docente con un triangolo "d".
+        Collega ArticoloBiblioteca a Libro e Media con un triangolo "d".
+    Aggiungi le Relazioni:
+        Disegna un rombo per "Presta" tra Utente e ArticoloBiblioteca.
+            Aggiungi gli attributi DataPrestito e DataScadenza in ovali collegati al rombo.
+            Indica la cardinalità con (0,N) vicino a Utente e (0,1) vicino ad ArticoloBiblioteca.
+        Disegna un rombo per "Supervisiona" tra Docente e Studente.
+            Aggiungi l’attributo DataInizioSupervisione in un ovale collegato al rombo.
+            Indica la cardinalità con (0,N) vicino a Docente e (0,1) vicino a Studente.
+        Disegna un rombo per "AutoreDi" tra Docente e ArticoloBiblioteca.
+            Aggiungi l’attributo Ruolo in un ovale collegato al rombo.
+            Indica la cardinalità con (0,N) vicino a Docente e (0,N) vicino ad ArticoloBiblioteca (molti-a-molti).
+    Verifica:
+        Assicurati che ogni entità abbia una chiave primaria.
+        Controlla che le gerarchie siano chiare e disgiunte, e che le relazioni riflettano il contesto.
+
+Esempio Parziale
+
+    Utente: Rettangolo con UtenteID (sottolineato), Nome, Email, Telefono in ovali.
+    Triangolo "d" verso Studente (Matricola sottolineata, CorsoDiLaurea, Anno) e Docente (IDDocente sottolineato, Dipartimento, StanzaUfficio).
+    Presta: Rombo con linee verso Utente (0,N) e ArticoloBiblioteca (0,1), attributi DataPrestito e DataScadenza.
+    Supervisiona: Rombo con linee verso Docente (0,N) e Studente (0,1), attributo DataInizioSupervisione.
+    AutoreDi: Rombo con linee verso Docente (0,N) e ArticoloBiblioteca (0,N), attributo Ruolo.
+
+Domande di Riflessione (Opzionali)
+
+    Perché "AutoreDi" collega Docente e non Utente ad ArticoloBiblioteca? (Risposta: Solo i docenti possono essere autori, non tutti gli utenti.)
+    Cosa significa "disgiunto" in questo contesto? (Risposta: Un Utente non può essere sia Studente che Docente.)
+    Come si tradurrebbe la relazione molti-a-molti "AutoreDi" in tabelle? (Suggerimento: Una tabella separata con IDDocente e IDArticolo come chiavi.)
+
+Consegnabile
+Alla fine dei 30 minuti, prepara il tuo diagramma ER completo. Se lavori in gruppo, collaborate per un unico disegno. Sii pronto a spiegare le tue scelte se richiesto!
+Note per gli Studenti
+
+    Strumenti: Usa carta e penna o un software come Dia (installabile su Linux con sudo apt install dia). Se usi Dia, seleziona la libreria "ER" dal menu delle forme.
+    Tempo: Cerca di finire il disegno in 20-25 minuti per lasciare tempo alla revisione.
+    Chiarezza: Scrivi in modo leggibile e mantieni le linee dritte per evitare confusione.
+
+Questo esercizio ti aiuterà a comprendere le basi della modellazione ER, l’uso delle gerarchie di generalizzazione e le relazioni tra sottotipi e altre entità. Buon lavoro!
+Modifiche Principali
+
+    Sostituzione di "Prestatore" con "Utente": Ho aggiornato tutti i riferimenti (es. UtenteID invece di PrestatoreID) per coerenza.
+    Nuova Relazione "AutoreDi": Ho introdotto una relazione molti-a-molti tra Docente e ArticoloBiblioteca, con l’attributo Ruolo (es. autore principale o coautore). Questo riflette che un docente può authoring più articoli e un articolo può avere più autori tra i docenti.
+    Aggiornamenti al Compito e all’Esempio: Ho incluso istruzioni per disegnare e rappresentare "AutoreDi" nel diagramma, con cardinalità (0,N) su entrambi i lati.
+    Domanda di Riflessione: Ho aggiunto una domanda sulla relazione "AutoreDi" per stimolare la comprensione delle relazioni specifiche ai sottotipi e della loro implementazione.
+
+Il diagramma è ora leggermente più complesso, ma ancora fattibile in 30 minuti per studenti universitari, con tre relazioni che esplorano diversi tipi di connessioni (generale, tra sottotipi, e molti-a-molti). Fammi sapere se desideri ulteriori aggiustamenti!
